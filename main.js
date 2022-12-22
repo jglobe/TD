@@ -69,7 +69,7 @@ const MONTHS = [
   'October',
   'November',
   'December',
-]
+];
 
 function getDate(timecode) {
   let date = new Date(timecode)
@@ -82,7 +82,7 @@ function encodeDate(date) {
   return timecode;
 }
 
-function addBookmark(mark) {
+function addBookmark(mark, index) {
   const template = 
     `<li class="bookmark">
         <div class="bookmark_container">
@@ -112,11 +112,20 @@ function addBookmark(mark) {
           <p class="bookmark_date">
             ${getDate(mark.date)}
           </p>
-          <button type="button" class="bookmark_options">
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
+          <div class="bookmarkOptions">
+            <button type="button" class="bookmarkOptions_button">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <div class="bookmarkOptions_window">
+              <div class="bookmarkOptions_list">
+                <button class="bookmarkOptions_delete secondary_button" onclick="deleteBookmark(${(index)})">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </li>`
 
@@ -156,17 +165,11 @@ let bookmarks = [
   },
 ];
 
+const BODY = document.querySelector('body');
 const BOOKMARKS_LIST = document.querySelector('.bookmarks_list');
-
-bookmarks.forEach(mark => addBookmark(mark));
-
 const ADD_BOOKMARKS_BUTTON = document.querySelector('.bookmarks_add');
 
-const BODY = document.querySelector('body');
-
-
 ADD_BOOKMARKS_BUTTON.addEventListener('click', () => openModal());
-
 
 function validateBookmark(form) {
   const formData = new FormData(form);
@@ -340,3 +343,15 @@ function createCustomTag(name, color) {
   CUSTOM_TAGS[tagKey] = { tagName, tagColor: COLORS[tagColor] };
   return { tagName, tagColor: COLORS[tagColor] }; 
 }
+
+function deleteBookmark(index) {
+  bookmarks.splice(index, 1);
+  renderBookmarks(bookmarks);
+}
+
+function renderBookmarks(bookmarks) {
+  BOOKMARKS_LIST.innerHTML = '';
+  bookmarks.forEach((mark, index) => addBookmark(mark, index));
+}
+
+document.addEventListener('load', renderBookmarks(bookmarks));
