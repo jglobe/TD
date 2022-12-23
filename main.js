@@ -82,6 +82,14 @@ function encodeDate(date) {
   return timecode;
 }
 
+function addTagToFilter(tag, filter) {
+  if (filter.hasOwnProperty(tag)) {
+    filter[tag].count++
+  } else {
+    filter[tag] = { active: true, count: 1 }
+  } 
+}
+
 function addBookmark(mark, index) {
   const template = 
     `<li class="bookmark">
@@ -167,6 +175,7 @@ let bookmarks = [
 
 const BODY = document.querySelector('body');
 const BOOKMARKS_LIST = document.querySelector('.bookmarks_list');
+const BOOKMARKS_TAG_LIST = document.querySelector('.bookmarks_tags');
 const ADD_BOOKMARKS_BUTTON = document.querySelector('.bookmarks_add');
 
 ADD_BOOKMARKS_BUTTON.addEventListener('click', () => openModal());
@@ -317,7 +326,7 @@ function createBookmark(data) {
   }
   data.customTagName ? bookmark.customTag = createCustomTag(data.customTagName, data.customTagColor) : null;
   bookmarks.push(bookmark);
-  addBookmark(bookmark);
+  renderBookmarks(bookmarks)
   closeModal();
 }
 
@@ -349,9 +358,55 @@ function deleteBookmark(index) {
   renderBookmarks(bookmarks);
 }
 
+let visibleTags = getAllTags();
+
+function getAllTags() {
+  let currentTags = {}
+  Object.keys(BOOKMARKS_TAGS).forEach((tag) => currentTags[tag] = true);
+  return currentTags;
+}
+function getNumberOfTags(visibleTags) {
+  let currentTags = {}
+  Object.keys(visibleTags).forEach((tag) => currentTags[tag] = 0);
+  return currentTags;
+}
+
+function applyFilter(tag) {
+  if(visibleTags.hasOwnProperty(tag) && visibleTags[tag] === true) {
+    visibleTags[tag] = false;
+  } else {
+    visibleTags[tag] = true;
+  }
+
+  renderBookmarks(bookmarks);
+}
+
 function renderBookmarks(bookmarks) {
   BOOKMARKS_LIST.innerHTML = '';
-  bookmarks.forEach((mark, index) => addBookmark(mark, index));
+  let newCountOfTags = getNumberOfTags(visibleTags);
+
+  bookmarks.forEach((mark, index) => {
+    visibleTags[mark.tag] === true ?  addBookmark(mark, index) : null;
+    newCountOfTags[mark.tag]++
+  });
+
+  renderFilter(visibleTags, newCountOfTags);
+}
+
+function renderFilter(visibleTags, countTags) {
+  BOOKMARKS_TAG_LIST.innerHTML = '';
+  for(let tag of Object.keys(countTags)) {
+    if (countTags[tag] !== 0)
+      BOOKMARKS_TAG_LIST.innerHTML += `
+      <li
+        class="tag ${visibleTags[tag] ? 'tag__active' : 'tag__disable'}"
+        onclick="applyFilter('${tag}')"
+      >
+        <span class="tag_number">${countTags[tag]}</span>
+        <span class="tag_name">${tag.toUpperCase()}</span>
+      </li>`;
+    }
+  
 }
 
 document.addEventListener('load', renderBookmarks(bookmarks));
