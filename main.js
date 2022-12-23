@@ -69,7 +69,7 @@ const MONTHS = [
   'October',
   'November',
   'December',
-]
+];
 
 function getDate(timecode) {
   let date = new Date(timecode)
@@ -82,7 +82,15 @@ function encodeDate(date) {
   return timecode;
 }
 
-function addBookmark(mark) {
+function addTagToFilter(tag, filter) {
+  if (filter.hasOwnProperty(tag)) {
+    filter[tag].count++
+  } else {
+    filter[tag] = { active: true, count: 1 }
+  } 
+}
+
+function addBookmark(mark, index) {
   const template = 
     `<li class="bookmark">
         <div class="bookmark_container">
@@ -112,11 +120,20 @@ function addBookmark(mark) {
           <p class="bookmark_date">
             ${getDate(mark.date)}
           </p>
-          <button type="button" class="bookmark_options">
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
+          <div class="bookmarkOptions">
+            <button type="button" class="bookmarkOptions_button">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <div class="bookmarkOptions_window">
+              <div class="bookmarkOptions_list">
+                <button class="bookmarkOptions_delete secondary_button" onclick="deleteBookmark(${(index)})">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </li>`
 
@@ -156,17 +173,12 @@ let bookmarks = [
   },
 ];
 
+const BODY = document.querySelector('body');
 const BOOKMARKS_LIST = document.querySelector('.bookmarks_list');
-
-bookmarks.forEach(mark => addBookmark(mark));
-
+const BOOKMARKS_TAG_LIST = document.querySelector('.bookmarks_tags');
 const ADD_BOOKMARKS_BUTTON = document.querySelector('.bookmarks_add');
 
-const BODY = document.querySelector('body');
-
-
 ADD_BOOKMARKS_BUTTON.addEventListener('click', () => openModal());
-
 
 function validateBookmark(form) {
   const formData = new FormData(form);
@@ -314,7 +326,7 @@ function createBookmark(data) {
   }
   data.customTagName ? bookmark.customTag = createCustomTag(data.customTagName, data.customTagColor) : null;
   bookmarks.push(bookmark);
-  addBookmark(bookmark);
+  renderBookmarks(bookmarks)
   closeModal();
 }
 
@@ -340,3 +352,61 @@ function createCustomTag(name, color) {
   CUSTOM_TAGS[tagKey] = { tagName, tagColor: COLORS[tagColor] };
   return { tagName, tagColor: COLORS[tagColor] }; 
 }
+
+function deleteBookmark(index) {
+  bookmarks.splice(index, 1);
+  renderBookmarks(bookmarks);
+}
+
+let visibleTags = getAllTags();
+
+function getAllTags() {
+  let currentTags = {}
+  Object.keys(BOOKMARKS_TAGS).forEach((tag) => currentTags[tag] = true);
+  return currentTags;
+}
+function getNumberOfTags(visibleTags) {
+  let currentTags = {}
+  Object.keys(visibleTags).forEach((tag) => currentTags[tag] = 0);
+  return currentTags;
+}
+
+function applyFilter(tag) {
+  if(visibleTags.hasOwnProperty(tag) && visibleTags[tag] === true) {
+    visibleTags[tag] = false;
+  } else {
+    visibleTags[tag] = true;
+  }
+
+  renderBookmarks(bookmarks);
+}
+
+function renderBookmarks(bookmarks) {
+  BOOKMARKS_LIST.innerHTML = '';
+  let newCountOfTags = getNumberOfTags(visibleTags);
+
+  bookmarks.forEach((mark, index) => {
+    visibleTags[mark.tag] === true ?  addBookmark(mark, index) : null;
+    newCountOfTags[mark.tag]++
+  });
+
+  renderFilter(visibleTags, newCountOfTags);
+}
+
+function renderFilter(visibleTags, countTags) {
+  BOOKMARKS_TAG_LIST.innerHTML = '';
+  for(let tag of Object.keys(countTags)) {
+    if (countTags[tag] !== 0)
+      BOOKMARKS_TAG_LIST.innerHTML += `
+      <li
+        class="tag ${visibleTags[tag] ? 'tag__active' : 'tag__disable'}"
+        onclick="applyFilter('${tag}')"
+      >
+        <span class="tag_number">${countTags[tag]}</span>
+        <span class="tag_name">${tag.toUpperCase()}</span>
+      </li>`;
+    }
+  
+}
+
+document.addEventListener('load', renderBookmarks(bookmarks));

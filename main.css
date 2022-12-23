@@ -57,9 +57,9 @@
   margin-left: 8px;
   padding: 8px 16px;
   border-radius: 32px;
+  border: solid 2px #f5f5f5;
 
-  background-color: #f5f5f5;
-  color: #5e5e5e;
+
   opacity: 1;
 
   font-size: 12px;
@@ -67,6 +67,16 @@
   letter-spacing: 1.4px;
   text-transform: uppercase;
 } 
+
+.tag.tag__active {
+  background-color: #f5f5f5;
+  color: #5e5e5e;
+}
+
+.tag.tag__disable {
+  background-color: #ffffff;
+  border: solid 2px #f5f5f5;
+}
 
 .tag:hover {
   opacity: 0.7;
@@ -83,6 +93,15 @@
   border-radius: 4px;
 
   transition-duration: 0.3s;
+}
+
+.bookmark:nth-child(1n) {
+  animation: fadeIn .3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+    to { opacity: 1 }
 }
 
 .bookmark:hover {
@@ -125,7 +144,7 @@
   color: #5e5e5e;
 }
 
-.bookmark_options {
+.bookmarkOptions_button {
   height: 24px;
   width: 24px;
   border-radius: 100%;
@@ -139,11 +158,15 @@
   transition-duration: 0.3s;
 }
 
-.bookmark_options:hover {
+.bookmarkOptions_button:hover {
   background-color: #f5f5f5;
 }
 
-.bookmark_options span{
+.bookmarkOptions_button:hover + .bookmarkOptions_window, .bookmarkOptions_window:hover {
+  display: block;
+}
+
+.bookmarkOptions_button span{
   margin: 0 1px;
 
   height: 4px;
@@ -157,6 +180,29 @@
   margin: 80px auto;
 }
 
+.bookmarkOptions {
+  position: relative;
+}
+
+.bookmarkOptions_window {
+  padding-left: 4px;
+  
+  position: absolute;
+  top: 0;
+  left: 24px;
+  
+  display: none;
+}
+
+.bookmarkOptions_list {
+  padding: 4px;
+
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  box-shadow: 0px 0px 16px 1px rgb(34 60 80 / 10%);
+}
+
 .primary_button {
   padding: 14px 38px;
 
@@ -166,12 +212,28 @@
   background-color: #83b1ff;
 
   font-size: 15px;
+  cursor: pointer;
 }
 
 .primary_button:hover {
   opacity: 0.7;
+}
 
+.secondary_button {
+  padding: 2px 4px;
+  
+  border-radius: 4px;
+  background: #ffffff;
+  color: #5e5e5e;
+
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
   cursor: pointer;
+}
+
+.secondary_button:hover {
+  background: #f5f5f5;
 }
 
 .modal {
